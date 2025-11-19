@@ -259,20 +259,6 @@ html, body {
   text-decoration: underline;
 }
 
-.linkedin-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: #0a66c2;
-  color: #ffffff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
 @media (max-width: 900px) {
   .layout {
     flex-direction: column;
@@ -291,6 +277,13 @@ html, body {
   .footer {
     flex-wrap: wrap;
   }
+}
+
+.linkedin-svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: #0a66c2;
+  display: block;
 }
 
 /* === Gantt diagram === */
