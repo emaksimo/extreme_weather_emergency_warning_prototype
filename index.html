@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Early warning and Emergency planner</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="top-bar">
+      <div class="title">Early warning and Emergency planner</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-button active" data-target="tab-ch">Switzerland</button>
+      <button class="tab-button" data-target="tab-uae">UAE</button>
+    </div>
+
+    <!-- Switzerland tab -->
+    <section id="tab-ch" class="tab-content active">
+      <div class="layout">
+        <div class="map-container">
+          <div id="map-ch"></div>
+        </div>
+        <aside class="info-panel">
+          <div>
+            <div class="panel-title">Switzerland – Municipalities</div>
+          </div>
+
+          <div class="municipality-buttons">
+            <button class="municipality-button" data-country="ch" data-id="zurich">Zürich</button>
+            <button class="municipality-button" data-country="ch" data-id="geneva">Genève</button>
+          </div>
+
+          <!-- Municipality info -->
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-row">
+                <span class="label">Municipality:</span>
+                <span class="value" id="ch-name">–</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Square area:</span>
+                <span class="value" id="ch-area">–</span>
+                <span class="value">km²</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Population:</span>
+                <span class="value" id="ch-population">–</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Schools:</span>
+                <span class="value" id="ch-schools">–</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast block -->
+          <div class="spacer"></div>
+
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-header">
+                <div class="forecast-title">Forecast</div>
+                <div class="forecast-datetime" id="forecast-datetime-ch"></div>
+              </div>
+              <div class="forecast-row">
+                <span class="label">+6h:</span>
+                <span class="value">100 mm cumulative rainfall</span>
+                <span class="danger-tag danger-4">level 4 danger</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">+12h forecast:</span>
+                <span class="value">250 mm cumulative rainfall</span>
+                <span class="danger-tag danger-5">level 5 danger</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Historical daily record:</span>
+                <span class="value">145 mm (1974)</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">24h Tmin:</span>
+                <span class="value">5 °C</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly block -->
+          <div class="spacer"></div>
+
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-title">Hydro-meteorological anomalies last week:</div>
+              <div class="forecast-row">
+                <span class="label">Rainfall:</span>
+                <span class="value">+50 mm</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">River gauge:</span>
+                <span class="value">0.68 meters (flood critical threshold 0.75 meters)</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- UAE tab -->
+    <section id="tab-uae" class="tab-content">
+      <div class="layout">
+        <div class="map-container">
+          <div id="map-uae"></div>
+        </div>
+        <aside class="info-panel">
+          <div>
+            <div class="panel-title">UAE – Municipalities</div>
+          </div>
+
+          <div class="municipality-buttons">
+            <button class="municipality-button" data-country="uae" data-id="dubai">Dubai</button>
+            <button class="municipality-button" data-country="uae" data-id="abudhabi">Abu Dhabi</button>
+          </div>
+
+          <!-- Municipality info -->
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-row">
+                <span class="label">Municipality:</span>
+                <span class="value" id="uae-name">–</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Square area:</span>
+                <span class="value" id="uae-area">–</span>
+                <span class="value">km²</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Population:</span>
+                <span class="value" id="uae-population">–</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Schools:</span>
+                <span class="value" id="uae-schools">–</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast block -->
+          <div class="spacer"></div>
+
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-header">
+                <div class="forecast-title">Forecast</div>
+                <div class="forecast-datetime" id="forecast-datetime-uae"></div>
+              </div>
+              <div class="forecast-row">
+                <span class="label">+6h:</span>
+                <span class="value">148 mm cumulative rainfall</span>
+                <span class="danger-tag danger-4">level 4 danger</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">+12h:</span>
+                <span class="value">250 mm cumulative rainfall</span>
+                <span class="danger-tag danger-5">level 5 danger</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">Historical record:</span>
+                <span class="value">180 mm (1992)</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">24h Tmin:</span>
+                <span class="value">18 °C</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly block -->
+          <div class="spacer"></div>
+
+          <div class="text-block">
+            <div class="text-block-inner">
+              <div class="forecast-title">Hydro-meteorological anomalies last week:</div>
+              <div class="forecast-row">
+                <span class="label">Rainfall:</span>
+                <span class="value">+50 mm</span>
+              </div>
+              <div class="forecast-row">
+                <span class="label">River gauge:</span>
+                <span class="value">0.17 meters (flood critical threshold 0.34 meters)</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Project director:</span>
+      <span class="footer-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0a66c2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </span>
+      <a href="mailto:islam.ragab@sihub.ch">islam.ragab@sihub.ch</a>
+      <span>|</span>
+      <a
+        class="linkedin-badge"
+        href="https://www.linkedin.com/in/islam-ragab-/"
+        target="_blank"
+        rel="noopener"
+        aria-label="LinkedIn profile"
+        >
+        <img src="icons/ln.svg" alt="LinkedIn" style="width:30px;height:30px;" />
+      </a>
+    </footer>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>
