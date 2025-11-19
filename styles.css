@@ -6,9 +6,12 @@
     sans-serif;
 }
 
-body {
+html, body {
   background-color: #ffffff;
   color: #222222;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .app {
@@ -82,7 +85,6 @@ body {
   flex: 1 1 auto;
   /* give more vertical room */
   min-height: 600px;
-  max-height: calc(100vh - 140px); /* still leaves space for footer */
   align-items: stretch;
 }
 
@@ -205,8 +207,10 @@ body {
 }
 
 .forecast-datetime {
-  font-size: 1.15em;
+  margin-left: 1rem;
+  font-size: 1rem;
   color: #222222;
+  white-space: nowrap;
 }
 
 .danger-tag {
@@ -232,13 +236,13 @@ body {
 .footer {
   flex-shrink: 0;
   background: #f0f0f0;
-  border-top: 1px solid #d0d0d0;
+  margin-top: auto;
   padding: 0.6rem 1.25rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .footer-icon {
@@ -286,4 +290,89 @@ body {
   .footer {
     flex-wrap: wrap;
   }
+}
+
+/* === Gantt diagram === */
+#gantt-container {
+  position: relative;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 1.5rem 1rem 1rem;
+  margin-top: 1rem;
+  background: #fafafa;
+  font-size: 0.9rem;
+}
+
+/* One row per task */
+.gantt-row {
+  position: relative;
+  margin-bottom: 1rem;
+  padding-left: 8rem; /* space for the label on the left */
+}
+
+/* Task label on the left */
+.gantt-task-label {
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  width: 7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The bar itself */
+.gantt-bar {
+  position: relative;
+  height: 1.2rem;
+  border-radius: 4px;
+  background: #0a66c2;
+  opacity: 0.85;
+}
+
+/* Tooltip on hover */
+.gantt-bar::after {
+  content: attr(data-dates);
+  position: absolute;
+  left: 50%;
+  top: -1.5rem;
+  transform: translateX(-50%);
+  padding: 0.15rem 0.4rem;
+  background: #333;
+  color: #fff;
+  font-size: 0.7rem;
+  border-radius: 3px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.gantt-bar:hover::after {
+  opacity: 1;
+}
+
+/* optional: subtle horizontal separator lines */
+.gantt-row:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 8rem;
+  right: 0;
+  bottom: -0.4rem;
+  height: 1px;
+  background: #e0e0e0;
+}
+#gantt-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #444;
+  margin-bottom: 0.4rem;
+  padding: 0 0.5rem;
+}
+
+.gantt-axis-label {
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }

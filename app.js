@@ -1,4 +1,7 @@
-// Tabs
+// =======================
+// Tabs + Gantt handling
+// =======================
+
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
 
@@ -11,6 +14,11 @@ tabButtons.forEach((btn) => {
     const targetId = btn.getAttribute("data-target");
     document.getElementById(targetId).classList.add("active");
 
+    // If we switched to the Gantt tab, render it
+    if (targetId === "tab-3") {
+      ensureGanttRendered();
+    }
+
     // Fix map display after tab switch
     setTimeout(() => {
       mapCH.invalidateSize();
@@ -19,7 +27,10 @@ tabButtons.forEach((btn) => {
   });
 });
 
-// Municipality data (approximate real-world values)
+// =======================
+// Municipality data (info panel values)
+// =======================
+
 const municipalityData = {
   ch: {
     zurich: {
@@ -82,6 +93,10 @@ function updateMunicipalityInfo(country, id) {
   }
 }
 
+// =======================
+// Time / forecast label
+// =======================
+
 function formatForecastDateTime() {
   const now = new Date();
 
@@ -91,15 +106,24 @@ function formatForecastDateTime() {
   const day = String(now.getDate()).padStart(2, "0");
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const month = monthNames[now.getMonth()];
   const year = now.getFullYear();
 
   return `Current local time ${hours}:${minutes}, ${day} ${month} ${year}`;
 }
-
 
 function updateForecastDateTimes() {
   const formatted = formatForecastDateTime();
@@ -109,7 +133,10 @@ function updateForecastDateTimes() {
   if (elUAE) elUAE.textContent = formatted;
 }
 
+// =======================
 // Base layers: light gray canvas and satellite imagery
+// =======================
+
 const lightGray = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
   {
@@ -130,7 +157,8 @@ const worldImagery = L.tileLayer(
 // Switzerland map
 const mapCH = L.map("map-ch", {
   center: [46.8, 8.2],
-  zoom: 7,
+  zoom: 8,
+  minZoom: 8,
   layers: [lightGray],
 });
 
@@ -140,7 +168,7 @@ const baseMapsCH = {
 };
 L.control.layers(baseMapsCH, null, { position: "topright" }).addTo(mapCH);
 
-// UAE map
+// UAE base layers
 const lightGray2 = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
   {
@@ -182,48 +210,38 @@ L.control.layers(baseMapsUAE, null, { position: "topright" }).addTo(mapUAE);
 // Fit to UAE only (no global view)
 mapUAE.fitBounds(uaeBounds);
 
-// Simple illustrative municipality polygons, non-square contours
+// =======================
+// Switzerland + UAE polygons
+// =======================
+
+// Zürich feature (hard-coded)
+const zurichFeature = {
+  type: "Feature",
+  properties: { id: "zurich", name: "Zürich" },
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [8.46, 47.33],
+        [8.55, 47.32],
+        [8.63, 47.36],
+        [8.6, 47.44],
+        [8.5, 47.46],
+        [8.46, 47.4],
+        [8.46, 47.33],
+      ],
+    ],
+  },
+};
+
+// Start Switzerland collection with Zürich only; Geneva will be added from geneva.json
 const switzerlandMunicipalities = {
   type: "FeatureCollection",
-  features: [
-    {
-      type: "Feature",
-      properties: { id: "zurich", name: "Zürich" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [8.46, 47.33],
-            [8.55, 47.32],
-            [8.63, 47.36],
-            [8.6, 47.44],
-            [8.5, 47.46],
-            [8.46, 47.4],
-            [8.46, 47.33],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "geneva", name: "Genève" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [6.08, 46.16],
-            [6.18, 46.15],
-            [6.23, 46.19],
-            [6.21, 46.24],
-            [6.13, 46.26],
-            [6.07, 46.21],
-            [6.08, 46.16],
-          ],
-        ],
-      },
-    },
-  ],
+  features: [zurichFeature],
 };
+
+const swissLayers = {};
+let swissGeo;
 
 const uaeMunicipalities = {
   type: "FeatureCollection",
@@ -267,8 +285,11 @@ const uaeMunicipalities = {
   ],
 };
 
-const swissLayers = {};
 const uaeLayers = {};
+
+// =======================
+// Styles + interaction
+// =======================
 
 function municipalityStyle() {
   return {
@@ -326,16 +347,48 @@ function onUaeFeature(feature, layer) {
   });
 }
 
-const swissGeo = L.geoJSON(switzerlandMunicipalities, {
-  onEachFeature: onSwissFeature,
-}).addTo(mapCH);
-mapCH.fitBounds(swissGeo.getBounds());
+// =======================
+// Load Geneva from external geneva.json
+// =======================
+
+fetch("geneva.json")
+  .then((res) => res.json())
+  .then((genevaFeature) => {
+    // If geneva.json is a FeatureCollection, take the first feature
+    if (genevaFeature.type === "FeatureCollection") {
+      genevaFeature = genevaFeature.features[0];
+    }
+
+    genevaFeature.properties = genevaFeature.properties || {};
+    genevaFeature.properties.id = "geneva";
+    genevaFeature.properties.name = "Genève";
+
+    // Add to FeatureCollection
+    switzerlandMunicipalities.features.push(genevaFeature);
+
+    // Create the Leaflet GeoJSON layer now that we have both municipalities
+    swissGeo = L.geoJSON(switzerlandMunicipalities, {
+      onEachFeature: onSwissFeature,
+    }).addTo(mapCH);
+
+    mapCH.fitBounds(swissGeo.getBounds());
+  })
+  .catch((err) => {
+    console.error("Failed to load Geneva GeoJSON:", err);
+  });
+
+// =======================
+// UAE polygons layer
+// =======================
 
 const uaeGeo = L.geoJSON(uaeMunicipalities, {
   onEachFeature: onUaeFeature,
 }).addTo(mapUAE);
 
+// =======================
 // Buttons -> map + info sync
+// =======================
+
 function setupMunicipalityButtons(country, layers, map) {
   const buttons = document.querySelectorAll(
     '.municipality-button[data-country="' + country + '"]'
@@ -366,10 +419,132 @@ function setupMunicipalityButtons(country, layers, map) {
 setupMunicipalityButtons("ch", swissLayers, mapCH);
 setupMunicipalityButtons("uae", uaeLayers, mapUAE);
 
-// Initialize default selections
+// =======================
+// Init default selections + time labels
+// =======================
+
 updateMunicipalityInfo("ch", "zurich");
 updateMunicipalityInfo("uae", "dubai");
 
-// Initialize and refresh forecast date/times
 updateForecastDateTimes();
 setInterval(updateForecastDateTimes, 60 * 1000);
+
+// =======================
+// Gantt definition
+// =======================
+
+const ganttTasks = [
+  {
+    name: "Historical weather data collection",
+    start: "2026-01-01",
+    end: "2026-01-15",
+  },
+  {
+    name: "Radar & Satellite weather data collection",
+    start: "2026-01-15",
+    end: "2026-02-01",
+  },
+  {
+    name: "Predictive model setup",
+    start: "2026-02-10",
+    end: "2026-03-15",
+  },
+  {
+    name: "Predictive model calibration",
+    start: "2026-03-10",
+    end: "2026-04-05",
+  },
+  {
+    name: "Test phase",
+    start: "2026-04-01",
+    end: "2026-07-01",
+  },
+  {
+    name: "Deployment",
+    start: "2026-07-01",
+    end: "2026-09-01",
+  },
+];
+function renderGantt(tasks) {
+  const container = document.getElementById("gantt-container");
+  const axis = document.getElementById("gantt-axis");
+  if (!container || !tasks || tasks.length === 0) return;
+
+  const parseDate = (str) => new Date(str + "T00:00:00");
+
+  const dates = tasks.flatMap((t) => [parseDate(t.start), parseDate(t.end)]);
+  const minDate = new Date(Math.min.apply(null, dates));
+  const maxDate = new Date(Math.max.apply(null, dates));
+
+  const oneDay = 24 * 60 * 60 * 1000;
+  const totalDays = Math.max(1, Math.round((maxDate - minDate) / oneDay));
+
+  container.innerHTML = "";
+  axis.innerHTML = "";
+
+  // ----------- X AXIS (Time scale) --------------
+  const numTicks = 6; // adjust the number of labels you want
+  for (let i = 0; i <= numTicks; i++) {
+    const ratio = i / numTicks;
+    const date = new Date(minDate.getTime() + ratio * (maxDate - minDate));
+
+    const label = document.createElement("div");
+    label.className = "gantt-axis-label";
+    label.style.position = "absolute";
+    label.style.left = ratio * 100 + "%";
+
+    // format date as YYYY-MM-DD
+    label.textContent =
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0");
+
+    axis.appendChild(label);
+  }
+
+  axis.style.position = "relative";
+  axis.style.height = "1.2rem";
+
+  // ----------- TASK BARS --------------
+  tasks.forEach((task) => {
+    const start = parseDate(task.start);
+    const end = parseDate(task.end);
+
+    const offsetDays = Math.max(0, Math.round((start - minDate) / oneDay));
+    const durationDays = Math.max(1, Math.round((end - start) / oneDay));
+
+    const offsetPct = (offsetDays / totalDays) * 100;
+    const widthPct = (durationDays / totalDays) * 100;
+
+    const row = document.createElement("div");
+    row.className = "gantt-row";
+
+    const label = document.createElement("div");
+    label.className = "gantt-task-label";
+    label.textContent = task.name;
+
+    const bar = document.createElement("div");
+    bar.className = "gantt-bar";
+    bar.style.marginLeft = offsetPct + "%";
+    bar.style.width = widthPct + "%";
+    bar.setAttribute("data-dates", `${task.start} → ${task.end}`);
+
+    row.appendChild(label);
+    row.appendChild(bar);
+    container.appendChild(row);
+  });
+}
+let ganttRendered = false;
+
+function ensureGanttRendered() {
+  if (ganttRendered) return;
+  renderGantt(ganttTasks);
+  ganttRendered = true;
+}
+
+// If Gantt tab is initially active on page load
+if (document.getElementById("tab-3")?.classList.contains("active")) {
+  ensureGanttRendered();
+}
