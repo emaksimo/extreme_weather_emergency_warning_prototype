@@ -188,17 +188,17 @@ const worldImagery2 = L.tileLayer(
 
 // Bounds to keep the UAE centered and avoid global view
 const uaeBounds = L.latLngBounds(
-  [26, 56], // NW
-  [24, 51] // SE
+  [26, 58], // NW
+  [23, 51] // SE
 );
 
 const mapUAE = L.map("map-uae", {
-  center: [30.5, 54],
-  zoom: 8.5,
+  center: [27, 54],
+  zoom: 9.5,
   layers: [lightGray2],
   maxBounds: uaeBounds.pad(0.05),
   maxBoundsViscosity: 1.0,
-  minZoom: 7,
+  minZoom: 8,
 });
 
 const baseMapsUAE = {
@@ -444,9 +444,14 @@ const ganttTasks = [
     start: "2026-01-15",
     end: "2026-02-01",
   },
+    {
+    name: "Extreme rainfall assessment",
+    start: "2026-02-01",
+    end: "2026-02-15",
+  },
   {
     name: "Predictive model setup",
-    start: "2026-02-10",
+    start: "2026-02-15",
     end: "2026-03-15",
   },
   {
@@ -455,59 +460,37 @@ const ganttTasks = [
     end: "2026-04-05",
   },
   {
-    name: "Test phase",
+    name: "Test phase with real-time weather data",
     start: "2026-04-01",
     end: "2026-07-01",
   },
   {
-    name: "Deployment",
+    name: "User API development",
     start: "2026-07-01",
+    end: "2026-07-15",
+  },
+  {
+    name: "Deployment",
+    start: "2026-07-15",
     end: "2026-09-01",
   },
 ];
+
 function renderGantt(tasks) {
   const container = document.getElementById("gantt-container");
-  const axis = document.getElementById("gantt-axis");
   if (!container || !tasks || tasks.length === 0) return;
 
+  // Convert date strings to Date objects
   const parseDate = (str) => new Date(str + "T00:00:00");
 
   const dates = tasks.flatMap((t) => [parseDate(t.start), parseDate(t.end)]);
   const minDate = new Date(Math.min.apply(null, dates));
   const maxDate = new Date(Math.max.apply(null, dates));
-
   const oneDay = 24 * 60 * 60 * 1000;
   const totalDays = Math.max(1, Math.round((maxDate - minDate) / oneDay));
 
   container.innerHTML = "";
-  axis.innerHTML = "";
 
-  // ----------- X AXIS (Time scale) --------------
-  const numTicks = 6; // adjust the number of labels you want
-  for (let i = 0; i <= numTicks; i++) {
-    const ratio = i / numTicks;
-    const date = new Date(minDate.getTime() + ratio * (maxDate - minDate));
-
-    const label = document.createElement("div");
-    label.className = "gantt-axis-label";
-    label.style.position = "absolute";
-    label.style.left = ratio * 100 + "%";
-
-    // format date as YYYY-MM-DD
-    label.textContent =
-      date.getFullYear() +
-      "-" +
-      String(date.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(date.getDate()).padStart(2, "0");
-
-    axis.appendChild(label);
-  }
-
-  axis.style.position = "relative";
-  axis.style.height = "1.2rem";
-
-  // ----------- TASK BARS --------------
   tasks.forEach((task) => {
     const start = parseDate(task.start);
     const end = parseDate(task.end);
@@ -525,6 +508,13 @@ function renderGantt(tasks) {
     label.className = "gantt-task-label";
     label.textContent = task.name;
 
+    // NEW: date label above the bar
+    const dateLabel = document.createElement("div");
+    dateLabel.className = "gantt-bar-dates";
+    dateLabel.style.marginLeft = offsetPct + "%";
+    dateLabel.style.width = widthPct + "%";
+    dateLabel.textContent = `${task.start} → ${task.end}`;
+
     const bar = document.createElement("div");
     bar.className = "gantt-bar";
     bar.style.marginLeft = offsetPct + "%";
@@ -532,10 +522,12 @@ function renderGantt(tasks) {
     bar.setAttribute("data-dates", `${task.start} → ${task.end}`);
 
     row.appendChild(label);
+    row.appendChild(dateLabel);
     row.appendChild(bar);
     container.appendChild(row);
   });
 }
+
 let ganttRendered = false;
 
 function ensureGanttRendered() {

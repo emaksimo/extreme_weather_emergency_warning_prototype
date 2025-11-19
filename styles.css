@@ -7,6 +7,7 @@
 }
 
 html, body {
+  font-family: 'Comfortaa', sans-serif;
   background-color: #ffffff;
   color: #222222;
   height: 100%;
@@ -246,7 +247,7 @@ html, body {
 }
 
 .footer-icon {
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 .footer a {
@@ -307,18 +308,19 @@ html, body {
 .gantt-row {
   position: relative;
   margin-bottom: 1rem;
-  padding-left: 8rem; /* space for the label on the left */
+  padding-left: 15rem; /* space for the label on the left */
 }
 
 /* Task label on the left */
 .gantt-task-label {
   position: absolute;
   left: 0;
-  top: 0.1rem;
-  width: 7rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  top: 0;
+  width: 13rem;
+  white-space: normal;   /* ⬅ allow wrapping onto multiple lines */
+  overflow: visible;     /* ⬅ don't clip text */
+  text-overflow: clip;   /* ⬅ no "..." ellipsis */
+  line-height: 1.2;
 }
 
 /* The bar itself */
@@ -365,7 +367,7 @@ html, body {
 #gantt-axis {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #444;
   margin-bottom: 0.4rem;
   padding: 0 0.5rem;
@@ -375,4 +377,10 @@ html, body {
   text-align: center;
   transform: translateX(-50%);
   white-space: nowrap;
+}
+.gantt-bar-dates {
+  font-size: 0.75rem;
+  margin-bottom: 0.15rem;
+  text-align: center;
+  pointer-events: none; /* so hover still hits the bar if needed */
 }
